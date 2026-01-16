@@ -1,0 +1,256 @@
+{% comment %}
+  Section: Newsletter Interativa - UX Premium (A MARCA)
+{% endcomment %}
+
+<style>
+  .section-{{ section.id }} {
+    padding: {{ section.settings.padding_v }}px 0;
+    background-color: {{ section.settings.bg_color }};
+    overflow: hidden;
+  }
+
+  .section-{{ section.id }} .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* --- ESTADO INICIAL (ESCONDIDO) --- */
+  .section-{{ section.id }} .reveal-item {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity 1.2s cubic-bezier(0.2, 0, 0.2, 1), 
+                transform 1.2s cubic-bezier(0.2, 0, 0.2, 1);
+  }
+
+  /* Delay escalonado para um efeito mais fluido */
+  .section-{{ section.id }} .reveal-title { transition-delay: 0.1s; }
+  .section-{{ section.id }} .reveal-subtitle { transition-delay: 0.2s; }
+  .section-{{ section.id }} .reveal-form { transition-delay: 0.3s; }
+  .section-{{ section.id }} .reveal-image { transition-delay: 0.1s; }
+
+  /* --- ESTADO ATIVO (QUANDO PASSA PELA PÁGINA) --- */
+  .section-{{ section.id }}.is-visible .reveal-item {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .section-{{ section.id }} .newsletter-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 80px;
+  }
+
+  .section-{{ section.id }} .image-box {
+    flex: 0 0 350px;
+    height: 480px;
+    position: relative;
+    display: {% if section.settings.show_image %}block{% else %}none{% endif %};
+    overflow: hidden;
+  }
+
+  .section-{{ section.id }} .image-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .section-{{ section.id }} .title {
+    font-family: "Playfair Display", serif !important;
+    font-size: clamp(36px, 6vw, 52px);
+    font-style: italic;
+    font-weight: 400;
+    margin: 0 0 20px 0;
+    color: {{ section.settings.text_color }};
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+  }
+
+  .section-{{ section.id }} .subtitle {
+    font-size: 15px;
+    max-width: 420px;
+    line-height: 1.6;
+    margin-bottom: 40px;
+    color: color-mix(in srgb, {{ section.settings.text_color }} 65%, transparent);
+  }
+
+  .section-{{ section.id }} .form-wrapper {
+    position: relative;
+    max-width: 450px;
+  }
+
+  .section-{{ section.id }} .input-row {
+    display: flex;
+    align-items: center;
+    position: relative;
+    padding: 5px 0;
+  }
+
+  .section-{{ section.id }} input[type="email"] {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-size: 17px;
+    padding: 12px 0;
+    color: {{ section.settings.text_color }};
+    outline: none;
+  }
+
+  .section-{{ section.id }} .line-draw {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background: color-mix(in srgb, {{ section.settings.text_color }} 15%, transparent);
+  }
+
+  .section-{{ section.id }} .line-draw::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 1.5px;
+    background: {{ section.settings.text_color }};
+    bottom: 0;
+    left: 0;
+    transition: width 0.8s cubic-bezier(0.2, 0, 0.2, 1);
+  }
+
+  .section-{{ section.id }} input:focus ~ .line-draw::after {
+    width: 100%;
+  }
+
+  .section-{{ section.id }} .submit-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: {{ section.settings.text_color }};
+    padding-left: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-{{ section.id }} .submit-btn span {
+    transition: transform 0.4s cubic-bezier(0.2, 0, 0.2, 1);
+    font-size: 16px;
+  }
+
+  .section-{{ section.id }} .submit-btn:hover span {
+    transform: translateX(8px);
+  }
+
+  .section-{{ section.id }} .privacy {
+    font-size: 10px;
+    margin-top: 25px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: color-mix(in srgb, {{ section.settings.text_color }} 40%, transparent);
+  }
+
+  @media (max-width: 768px) {
+    .section-{{ section.id }} .newsletter-wrapper { flex-direction: column; text-align: center; gap: 40px; }
+    .section-{{ section.id }} .image-box { display: none !important; }
+    .section-{{ section.id }} .subtitle { margin: 0 auto 30px auto; }
+    .section-{{ section.id }} .input-row { flex-direction: column; border-bottom: 1px solid #eee; }
+    .section-{{ section.id }} .line-draw { display: none; }
+    .section-{{ section.id }} .submit-btn { padding: 15px 0; width: 100%; justify-content: center; }
+  }
+</style>
+
+<section class="section-{{ section.id }}" id="Newsletter-{{ section.id }}">
+  <div class="container">
+    <div class="newsletter-wrapper">
+      
+      {% if section.settings.show_image and section.settings.image != blank %}
+        <div class="image-box reveal-item reveal-image">
+          <img 
+            src="{{ section.settings.image | image_url: width: 700 }}" 
+            alt="{{ section.settings.image.alt | escape }}" 
+            loading="lazy"
+            width="{{ section.settings.image.width }}"
+            height="{{ section.settings.image.height }}"
+          >
+        </div>
+      {% endif %}
+
+      <div class="content-box">
+        <h2 class="title reveal-item reveal-title">{{ section.settings.title }}</h2>
+        <p class="subtitle reveal-item reveal-subtitle">{{ section.settings.subtitle }}</p>
+
+        <div class="form-wrapper reveal-item reveal-form">
+          {% form 'customer' %}
+            {% if form.posted_successfully? %}
+              <div class="success-msg" style="font-family: 'Playfair Display', serif; font-style: italic; font-size: 22px;">
+                {{ section.settings.success_msg }}
+              </div>
+            {% else %}
+              <div class="input-row">
+                <input type="hidden" name="contact[tags]" value="newsletter">
+                <input type="email" name="contact[email]" placeholder="{{ section.settings.placeholder }}" required autocomplete="email" spellcheck="false">
+                <div class="line-draw"></div>
+                <button type="submit" class="submit-btn" aria-label="{{ section.settings.button_label }}">
+                  {{ section.settings.button_label }} <span>→</span>
+                </button>
+              </div>
+              
+              <div class="privacy">
+                {{ section.settings.privacy_text }} 
+                {% if section.settings.privacy_link != blank %}
+                  <a href="{{ section.settings.privacy_link }}" style="text-decoration: underline; color: inherit;">política</a>.
+                {% endif %}
+              </div>
+            {% endif %}
+          {% endform %}
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<script>
+  (function() {
+    const sectionElement = document.getElementById('Newsletter-{{ section.id }}');
+    
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        // Quando 15% da seção estiver visível, ativa a classe
+        if (entry.isIntersecting) {
+          sectionElement.classList.add('is-visible');
+          // Para a observação após animar uma vez para performance
+          observer.unobserve(sectionElement);
+        }
+      });
+    }, { threshold: 0.15 });
+
+    observer.observe(sectionElement);
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Newsletter Interativa",
+  "settings": [
+    { "type": "color", "id": "bg_color", "label": "Fundo", "default": "#ffffff" },
+    { "type": "color", "id": "text_color", "label": "Texto", "default": "#121212" },
+    { "type": "range", "id": "padding_v", "min": 40, "max": 160, "step": 10, "unit": "px", "label": "Espaço Vertical", "default": 100 },
+    { "type": "header", "content": "Imagem" },
+    { "type": "checkbox", "id": "show_image", "label": "Mostrar Imagem", "default": true },
+    { "type": "image_picker", "id": "image", "label": "Imagem Lateral" },
+    { "type": "header", "content": "Texto" },
+    { "type": "text", "id": "title", "label": "Título", "default": "Seja um marcado" },
+    { "type": "textarea", "id": "subtitle", "label": "Subtítulo", "default": "Receba novidades, lançamentos e mensagens inspiradoras." },
+    { "type": "text", "id": "placeholder", "label": "Placeholder", "default": "seu@email.com" },
+    { "type": "text", "id": "button_label", "label": "Botão", "default": "Entrar" },
+    { "type": "text", "id": "success_msg", "label": "Sucesso", "default": "Bem-vindo(a). Sua marca começa agora." },
+    { "type": "text", "id": "privacy_text", "label": "Texto Privacidade", "default": "Concordo com a" },
+    { "type": "url", "id": "privacy_link", "label": "Link Privacidade" }
+  ],
+  "presets": [{ "name": "Newsletter Interativa" }]
+}
+{% endschema %}

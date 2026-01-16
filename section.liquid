@@ -1,0 +1,196 @@
+{% comment %}
+  Seção: Coleções Divididas Elegante - Refined Animation
+{% endcomment %}
+
+<section class="split-collections-section section-{{ section.id }}" style="margin-top: {{ section.settings.margin_top }}px; margin-bottom: {{ section.settings.margin_bottom }}px;">
+  <div class="split-container">
+    
+    {%- for block in section.blocks -%}
+      <div class="split-item reveal-observer" {{ block.shopify_attributes }}>
+        <a href="{{ block.settings.collection_link }}" class="split-link-wrapper">
+          <div class="split-image-container">
+            {%- if block.settings.image != blank -%}
+              {{ block.settings.image | image_url: width: 1500 | image_tag:
+                loading: 'lazy',
+                widths: '375, 550, 750, 1100, 1500',
+                class: 'split-image',
+                alt: block.settings.image.alt | escape
+              }}
+            {%- else -%}
+              {{ 'collection-1' | placeholder_svg_tag: 'split-placeholder' }}
+            {%- endif -%}
+            <div class="split-overlay"></div>
+          </div>
+          
+          <div class="split-content">
+            <div class="btn-chique">
+              {{ block.settings.button_label }}
+            </div>
+          </div>
+        </a>
+      </div>
+    {%- endfor -%}
+
+  </div>
+</section>
+
+<style>
+  .section-{{ section.id }} .split-container {
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
+    overflow: hidden;
+  }
+
+  .section-{{ section.id }} .split-item {
+    position: relative;
+    flex: 1 1 50%;
+    min-width: 350px;
+    height: 75vh;
+    overflow: hidden;
+    background: #f4f4f4;
+  }
+
+  @media screen and (max-width: 768px) {
+    .section-{{ section.id }} .split-item {
+      flex: 1 1 100%;
+      height: 65vh; /* Altura otimizada para mobile */
+    }
+  }
+
+  /* --- ESTADOS DE ANIMAÇÃO (REVEAL) --- */
+  .section-{{ section.id }} .split-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    /* Começa com zoom no mobile para animar ao scroll */
+    transform: scale(1.15);
+    transition: transform 2s cubic-bezier(0.16, 1, 0.3, 1), opacity 1s ease;
+  }
+
+  .section-{{ section.id }} .btn-chique {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
+    transition-delay: 0.3s;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+
+  /* Classe ativada via JS quando entra na tela */
+  .section-{{ section.id }} .split-item.is-visible .split-image {
+    transform: scale(1);
+  }
+
+  .section-{{ section.id }} .split-item.is-visible .btn-chique {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* --- ELEMENTOS VISUAIS --- */
+  .section-{{ section.id }} .split-link-wrapper {
+    display: block;
+    width: 100%;
+    height: 100%;
+    position: relative;
+    text-decoration: none;
+  }
+
+  .section-{{ section.id }} .split-overlay {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.15);
+    transition: background 0.8s ease;
+    z-index: 1;
+  }
+
+  .section-{{ section.id }} .split-content {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+    width: 100%;
+    text-align: center;
+    pointer-events: none;
+  }
+
+  .section-{{ section.id }} .btn-chique {
+    display: inline-block;
+    padding: 14px 40px;
+    color: #ffffff;
+    border: 1px solid #ffffff;
+    background: transparent;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+
+  /* Hover apenas para dispositivos que suportam (Desktop) */
+  @media (hover: hover) {
+    .section-{{ section.id }} .split-item:hover .split-image {
+      transform: scale(1.08) !important; /* Zoom leve no hover */
+    }
+    .section-{{ section.id }} .split-item:hover .split-overlay {
+      background: rgba(0, 0, 0, 0.3);
+    }
+    .section-{{ section.id }} .split-item:hover .btn-chique {
+      background: #ffffff;
+      color: #000000;
+      backdrop-filter: none;
+    }
+  }
+</style>
+
+<script>
+  (function() {
+    const splitItems = document.querySelectorAll('.section-{{ section.id }} .reveal-observer');
+    
+    const observerOptions = {
+      threshold: 0.2, // Dispara quando 20% do item aparece
+      rootMargin: "0px 0px -50px 0px"
+    };
+
+    const splitObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+          // Se quiser que a animação ocorra apenas uma vez:
+          splitObserver.unobserve(entry.target);
+        }
+      });
+    }, observerOptions);
+
+    splitItems.forEach(item => splitObserver.observe(item));
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Coleções Divididas",
+  "max_blocks": 2,
+  "settings": [
+    { "type": "range", "id": "margin_top", "min": 0, "max": 100, "step": 4, "unit": "px", "label": "Margem Superior", "default": 0 },
+    { "type": "range", "id": "margin_bottom", "min": 0, "max": 100, "step": 4, "unit": "px", "label": "Margem Inferior", "default": 0 }
+  ],
+  "blocks": [
+    {
+      "type": "collection",
+      "name": "Coleção",
+      "settings": [
+        { "type": "image_picker", "id": "image", "label": "Imagem" },
+        { "type": "text", "id": "button_label", "label": "Botão", "default": "VER COLEÇÃO" },
+        { "type": "url", "id": "collection_link", "label": "Link" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Coleções Divididas",
+      "blocks": [ { "type": "collection" }, { "type": "collection" } ]
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,208 @@
+<section class="inspire-section" style="background-color: {{ section.settings.bg_color }};">
+  <div class="inspire-container">
+    {% if section.settings.title != blank %}
+      <h2 class="inspire-title">{{ section.settings.title }}</h2>
+    {% endif %}
+
+    <div class="inspire-carousel" aria-label="Inspiração de Looks">
+      {%- for block in section.blocks -%}
+        <div class="inspire-card" {{ block.shopify_attributes }}>
+          <div class="video-wrapper">
+            {% if block.settings.video_url != blank %}
+              {{
+                block.settings.video_url
+                | video_tag:
+                  autoplay: false,
+                  loop: true,
+                  muted: true,
+                  controls: false,
+                  playsinline: true,
+                  preload: 'metadata',
+                  class: 'inspire-video js-inspire-video',
+                  data_block_id: block.id
+              }}
+            {% else %}
+              <div class="inspire-video-placeholder" aria-hidden="true"></div>
+            {% endif %}
+
+            {% if block.settings.caption != blank %}
+              <div class="video-overlay" aria-hidden="true">
+                <span>{{ block.settings.caption }}</span>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      {%- endfor -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Inspiração de Looks",
+  "settings": [
+    { "type": "text", "id": "title", "label": "Título da Seção", "default": "Pra você se inspirar" },
+    { "type": "range", "id": "title_size", "min": 20, "max": 100, "step": 2, "unit": "px", "label": "Tamanho da Fonte (Desktop)", "default": 64 },
+    { "type": "color", "id": "bg_color", "label": "Cor de Fundo", "default": "#f9f6f2" }
+  ],
+  "blocks": [
+    {
+      "type": "video_block",
+      "name": "Vídeo do Look",
+      "settings": [
+        { "type": "video", "id": "video_url", "label": "Selecione o Vídeo (MP4)" },
+        { "type": "text", "id": "caption", "label": "Legenda Curta", "default": "Look Noite" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Inspiração de Looks",
+      "blocks": [
+        { "type": "video_block" },
+        { "type": "video_block" },
+        { "type": "video_block" }
+      ]
+    }
+  ]
+}
+{% endschema %}
+
+<style>
+  .inspire-section {
+    padding: 80px 0;
+    overflow: hidden;
+  }
+
+  .inspire-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  .inspire-title {
+    /* Evita @import dentro do section: usa fonte do tema como fallback */
+    font-family: var(--font-heading-family, serif);
+    font-size: {{ section.settings.title_size }}px;
+    text-align: center;
+    color: #1a1a1a;
+    margin-bottom: 50px;
+    font-weight: 400;
+    font-style: italic;
+    letter-spacing: -1px;
+    line-height: 1.2;
+  }
+
+  .inspire-carousel {
+    display: flex;
+    gap: 20px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    padding-bottom: 20px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .inspire-carousel::-webkit-scrollbar { display: none; }
+
+  .inspire-card {
+    flex: 0 0 300px;
+    scroll-snap-align: start;
+    border-radius: 40px;
+    overflow: hidden;
+    position: relative;
+    aspect-ratio: 9 / 16;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    transition: transform 0.35s ease;
+  }
+
+  .inspire-card:hover { transform: translateY(-10px); }
+
+  .video-wrapper { width: 100%; height: 100%; position: relative; }
+
+  .inspire-video,
+  .inspire-video-placeholder {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    background: rgba(0,0,0,0.04);
+  }
+
+  .video-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 30px 20px;
+    background: linear-gradient(transparent, rgba(0,0,0,0.4));
+    color: #fff;
+    font-family: var(--font-heading-family, serif);
+    font-size: 1.2rem;
+    font-style: italic;
+    text-align: center;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+    pointer-events: none;
+  }
+
+  .inspire-card:hover .video-overlay { opacity: 1; }
+
+  @media (max-width: 768px) {
+    .inspire-section { padding: 50px 0; }
+    .inspire-card { flex: 0 0 250px; }
+    .inspire-title {
+      font-size: calc({{ section.settings.title_size }}px * 0.7) !important;
+      min-font-size: 24px; /* fallback “documental” (não existe min-size) */
+    }
+  }
+</style>
+
+<script>
+  (function () {
+    // Respeita acessibilidade / energia no mobile
+    var reduceMotion = false;
+    try { reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+
+    var videos = document.querySelectorAll('.js-inspire-video');
+    if (!videos || !videos.length) return;
+
+    // Garanta atributos críticos para mobile
+    videos.forEach(function (v) {
+      v.muted = true;
+      v.playsInline = true;
+      v.setAttribute('muted', '');
+      v.setAttribute('playsinline', '');
+      // Evita tentativa de autoplay em massa
+      v.removeAttribute('autoplay');
+    });
+
+    if (reduceMotion) return;
+
+    // Lazy play/pause quando entra/sai da tela
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        var v = entry.target;
+        if (!v) return;
+
+        if (entry.isIntersecting && entry.intersectionRatio >= 0.6) {
+          // Só tenta tocar quando realmente visível
+          var p = v.play();
+          if (p && typeof p.catch === 'function') p.catch(function () {});
+        } else {
+          v.pause();
+        }
+      });
+    }, { root: null, threshold: [0, 0.6, 1] });
+
+    videos.forEach(function (v) { io.observe(v); });
+
+    // Pausa tudo ao trocar de aba (economia real)
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden) {
+        videos.forEach(function (v) { v.pause(); });
+      }
+    });
+  })();
+</script>

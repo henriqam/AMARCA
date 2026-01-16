@@ -1,0 +1,446 @@
+{% comment %}
+  -----------------------------------------------------------------------------
+  SHOPIFY ENTERPRISE HERO SECTION
+  Performance: CLS 0 | LCP Optimized (Image First) | Smart Autoplay
+  Stack: Liquid + CSS (Scoped) + Vanilla JS (Observer)
+  -----------------------------------------------------------------------------
+{% endcomment %}
+
+{%- style -%}
+  #shopify-section-{{ section.id }} {
+    --hero-height-desktop: {{ section.settings.height_desktop }}vh;
+    --hero-height-mobile: {{ section.settings.height_mobile }}vh;
+    --overlay-color: {{ section.settings.overlay_color.red }}, {{ section.settings.overlay_color.green }}, {{ section.settings.overlay_color.blue }};
+    --overlay-opacity: {{ section.settings.overlay_opacity | divided_by: 100.0 }};
+    --text-color: {{ section.settings.text_color }};
+  }
+
+  /* --- Structure & Layout --- */
+  .hero-enterprise {
+    position: relative;
+    width: 100%;
+    height: var(--hero-height-mobile); /* Mobile Default */
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--text-color); /* Fallback placeholder */
+    contain: content; /* CSS Performance optimization */
+  }
+
+  @media screen and (min-width: 768px) {
+    .hero-enterprise {
+      height: var(--hero-height-desktop);
+    }
+  }
+
+  /* --- Media Layer (Z-Index 0) --- */
+  .hero-media-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  .hero-media {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* Transition for Video Fade-in */
+  .hero-video {
+    opacity: 0;
+    transition: opacity 0.8s ease-in-out;
+  }
+  .hero-video.is-playing {
+    opacity: 1;
+  }
+
+  /* Media Queries for Source Switching */
+  .desktop-only { display: none; }
+  .mobile-only { display: block; }
+
+  @media screen and (min-width: 768px) {
+    .desktop-only { display: block; }
+    .mobile-only { display: none; }
+  }
+
+  /* --- Overlay Layer (Z-Index 1) --- */
+  .hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(var(--overlay-color), var(--overlay-opacity));
+    z-index: 1;
+  }
+
+  /* --- Content Layer (Z-Index 2) --- */
+  .hero-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    max-width: 800px;
+    padding: 0 20px;
+    color: var(--text-color);
+    opacity: 0;
+    transform: translateY(20px);
+    animation: heroFadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation-delay: 0.2s;
+  }
+
+  .hero-heading {
+    font-size: clamp(2rem, 5vw, 4.5rem);
+    line-height: 1.1;
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    margin-bottom: 1rem;
+  }
+
+  .hero-subheading {
+    font-size: clamp(1rem, 2vw, 1.25rem);
+    font-weight: 300;
+    margin-bottom: 2rem;
+    opacity: 0.9;
+  }
+
+  .hero-btn {
+    display: inline-block;
+    padding: 14px 32px;
+    background-color: var(--text-color);
+    color: {{ section.settings.btn_text_color }};
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    border: 1px solid transparent;
+  }
+
+  .hero-btn:hover {
+    transform: translateY(-2px);
+    opacity: 0.9;
+  }
+
+  @keyframes heroFadeUp {
+    to { opacity: 1; transform: translateY(0); }
+  }
+{%- endstyle -%}
+
+<div class="hero-enterprise" data-section-id="{{ section.id }}">
+  
+  {%- comment -%}
+    LOGIC: Fallback Variables
+    If mobile media is missing, fallback to desktop.
+  {%- endcomment -%}
+  {%- liquid
+    assign desktop_img = section.settings.image_desktop
+    assign desktop_vid = section.settings.video_desktop
+    
+    assign mobile_img = section.settings.image_mobile | default: desktop_img
+    assign mobile_vid = section.settings.video_mobile
+    
+    # Priority for LCP: Always load desktop image eager
+    assign fetch_priority = 'high'
+  -%}
+
+  <div class="hero-media-wrapper">
+    
+    <div class="desktop-only hero-media-container" style="width:100%; height:100%;">
+      {%- if desktop_img != blank -%}
+        {{ desktop_img | image_url: width: 2000 | image_tag: 
+          class: 'hero-media hero-image',
+          widths: '750, 1100, 1500, 1780, 2000, 3000',
+          sizes: '100vw',
+          loading: 'eager',
+          fetchpriority: fetch_priority,
+          alt: desktop_img.alt | escape
+        }}
+      {%- endif -%}
+
+      {%- if desktop_vid != blank -%}
+        {%- assign poster_url = desktop_img | image_url: width: 2000 -%}
+        {{ desktop_vid | video_tag: 
+          image_size: '2000x',
+          loop: true,
+          muted: true,
+          playsinline: true,
+          autoplay: false,
+          preload: 'none',
+          class: 'hero-media hero-video js-hero-video',
+          poster: poster_url
+        }}
+      {%- endif -%}
+    </div>
+
+    <div class="mobile-only hero-media-container" style="width:100%; height:100%;">
+      {%- if mobile_img != blank -%}
+        {{ mobile_img | image_url: width: 800 | image_tag: 
+          class: 'hero-media hero-image',
+          widths: '375, 550, 750, 1100',
+          sizes: '100vw',
+          loading: 'eager',
+          fetchpriority: 'high',
+          alt: mobile_img.alt | escape
+        }}
+      {%- endif -%}
+
+      {%- if mobile_vid != blank or desktop_vid != blank -%}
+        {%- assign final_mobile_vid = mobile_vid | default: desktop_vid -%}
+        {%- assign mobile_poster_url = mobile_img | image_url: width: 800 -%}
+        
+        {{ final_mobile_vid | video_tag: 
+          image_size: '800x',
+          loop: true,
+          muted: true,
+          playsinline: true,
+          autoplay: false,
+          preload: 'none',
+          class: 'hero-media hero-video js-hero-video',
+          poster: mobile_poster_url
+        }}
+      {%- endif -%}
+    </div>
+
+  </div>
+
+  <div class="hero-overlay"></div>
+
+  <div class="hero-content">
+    {%- if section.settings.heading != blank -%}
+      <h2 class="hero-heading">{{ section.settings.heading | escape }}</h2>
+    {%- endif -%}
+    
+    {%- if section.settings.subheading != blank -%}
+      <div class="hero-subheading">{{ section.settings.subheading | escape }}</div>
+    {%- endif -%}
+    
+    {%- if section.settings.cta_text != blank and section.settings.cta_link != blank -%}
+      <a href="{{ section.settings.cta_link }}" class="hero-btn">
+        {{ section.settings.cta_text | escape }}
+      </a>
+    {%- endif -%}
+  </div>
+</div>
+
+<script>
+  (function() {
+    'use strict';
+
+    const section = document.querySelector('[data-section-id="{{ section.id }}"]');
+    if (!section) return;
+
+    // Select all videos in this section
+    const videos = section.querySelectorAll('.js-hero-video');
+    if (videos.length === 0) return;
+
+    // Utility: Safe Play
+    const playVideo = (video) => {
+      // Only play if it is the visible one (Mobile vs Desktop check via CSS display)
+      if (video.offsetParent === null) return; 
+
+      const playPromise = video.play();
+      if (playPromise !== undefined) {
+        playPromise.then(() => {
+          video.classList.add('is-playing');
+        }).catch(error => {
+          // Auto-play prevented or network error: Silent fail, keep poster image
+          console.debug('Hero Auto-play prevented:', error);
+        });
+      }
+    };
+
+    // Utility: Safe Pause
+    const pauseVideo = (video) => {
+      video.pause();
+      // Optional: video.classList.remove('is-playing'); // Keep opacity 1 to avoid flickering
+    };
+
+    // 1. Intersection Observer (Play when in viewport, Pause when out)
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        // Find visible video inside the entry
+        const visibleVideo = entry.target.querySelector('.js-hero-video:not([style*="display: none"])');
+        if(!visibleVideo) {
+             // Try finding any video if styles aren't computed yet or handle resizing
+             const allVideos = entry.target.querySelectorAll('.js-hero-video');
+             allVideos.forEach(v => {
+                 if(getComputedStyle(v.parentElement).display !== 'none') {
+                     if (entry.isIntersecting) playVideo(v);
+                     else pauseVideo(v);
+                 }
+             });
+             return;
+        }
+
+        if (entry.isIntersecting) {
+          playVideo(visibleVideo);
+        } else {
+          pauseVideo(visibleVideo);
+        }
+      });
+    }, { threshold: 0.25 }); // Start when 25% visible
+
+    observer.observe(section);
+
+    // 2. Visibility Change (Pause when tab hidden)
+    document.addEventListener('visibilitychange', () => {
+      videos.forEach(video => {
+        if (document.hidden) {
+          pauseVideo(video);
+        } else {
+          // Re-check logic only if section is in view? 
+          // Currently, rely on observer to re-trigger, 
+          // but forcing play if visible helps edge cases.
+          if(section.getBoundingClientRect().top < window.innerHeight && section.getBoundingClientRect().bottom > 0) {
+             if(getComputedStyle(video.parentElement).display !== 'none') playVideo(video);
+          }
+        }
+      });
+    });
+
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Enterprise Hero",
+  "tag": "section",
+  "class": "section-hero-enterprise",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Layout Desktop"
+    },
+    {
+      "type": "range",
+      "id": "height_desktop",
+      "min": 50,
+      "max": 100,
+      "step": 5,
+      "unit": "vh",
+      "label": "Desktop Height",
+      "default": 90
+    },
+    {
+      "type": "header",
+      "content": "Layout Mobile"
+    },
+    {
+      "type": "range",
+      "id": "height_mobile",
+      "min": 40,
+      "max": 100,
+      "step": 5,
+      "unit": "vh",
+      "label": "Mobile Height",
+      "default": 85
+    },
+    {
+      "type": "header",
+      "content": "Media Desktop"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_desktop",
+      "label": "Desktop Image (LCP & Poster)",
+      "info": "Mandatory. Loads immediately for best performance."
+    },
+    {
+      "type": "video",
+      "id": "video_desktop",
+      "label": "Desktop Video (Optional)",
+      "info": "Will autoplay over the image."
+    },
+    {
+      "type": "header",
+      "content": "Media Mobile"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_mobile",
+      "label": "Mobile Image",
+      "info": "Fallback to Desktop if blank."
+    },
+    {
+      "type": "video",
+      "id": "video_mobile",
+      "label": "Mobile Video (Optional)",
+      "info": "Highly recommended to use a separate portrait video."
+    },
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "The New Collection"
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "Subheading",
+      "default": "Spring / Summer 2024"
+    },
+    {
+      "type": "text",
+      "id": "cta_text",
+      "label": "Button Label",
+      "default": "Shop Now"
+    },
+    {
+      "type": "url",
+      "id": "cta_link",
+      "label": "Button Link"
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text Color",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "color",
+      "id": "btn_text_color",
+      "label": "Button Text Color",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "overlay_color",
+      "label": "Overlay Color",
+      "default": "#000000"
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "min": 0,
+      "max": 90,
+      "step": 5,
+      "unit": "%",
+      "label": "Overlay Opacity",
+      "default": 20
+    }
+  ],
+  "presets": [
+    {
+      "name": "Hero.PH"
+    }
+  ]
+}
+{% endschema %}

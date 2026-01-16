@@ -1,0 +1,227 @@
+{%- liquid
+  if section.settings.product_handle != blank
+    assign product = all_products[section.settings.product_handle]
+    assign current_variant = product.selected_or_first_available_variant
+  endif
+-%}
+
+<section class="stl-clean-section section-{{ section.id }}">
+  <div class="stl-clean-container">
+    
+    <div class="stl-clean-grid">
+      
+      <div class="stl-clean-image">
+        {% if section.settings.lifestyle_image != blank %}
+          <img src="{{ section.settings.lifestyle_image | image_url: width: 1200 }}" 
+               alt="{{ section.settings.title }}" 
+               loading="lazy"
+               width="{{ section.settings.lifestyle_image.width }}"
+               height="{{ section.settings.lifestyle_image.height }}">
+        {% else %}
+          {{ 'lifestyle-1' | placeholder_svg_tag: 'placeholder-svg' }}
+        {% endif %}
+      </div>
+
+      <div class="stl-clean-content">
+        <div class="stl-clean-content-inner">
+          
+          <header class="stl-clean-header">
+            <h2 class="stl-clean-title">{{ section.settings.title }}</h2>
+            <div class="stl-clean-divider"></div>
+          </header>
+
+          {% if product %}
+            <div class="stl-clean-product-info">
+              <a href="{{ product.url }}" class="stl-clean-product-link">
+                <div class="stl-clean-product-media">
+                   <img src="{{ product.featured_image | image_url: width: 500 }}" 
+                        alt="{{ product.title }}"
+                        loading="lazy"
+                        width="{{ product.featured_image.width }}"
+                        height="{{ product.featured_image.height }}">
+                </div>
+                
+                <div class="stl-clean-meta">
+                  <h3 class="stl-clean-product-title">{{ product.title }}</h3>
+                  {% if section.settings.show_price %}
+                    <p class="stl-clean-price">{{ current_variant.price | money }}</p>
+                  {% endif %}
+                </div>
+              </a>
+
+              {% if section.settings.description != blank %}
+                <p class="stl-clean-desc">{{ section.settings.description }}</p>
+              {% endif %}
+
+              {% if section.settings.show_button %}
+                {% form 'product', product %}
+                  <input type="hidden" name="id" value="{{ current_variant.id }}">
+                  <button type="submit" class="stl-clean-btn" {% unless current_variant.available %}disabled{% endunless %}>
+                    {% if current_variant.available %}EU QUERO{% else %}ESGOTADO{% endif %}
+                  </button>
+                {% endform %}
+              {% endif %}
+            </div>
+          {% endif %}
+          
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<style>
+/* FONTES: Usando Inter (Sora como alternativa) */
+.stl-clean-section {
+  padding: 100px 0;
+  background-color: #fff;
+  font-family: 'Inter', sans-serif;
+}
+
+.stl-clean-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 40px;
+}
+
+.stl-clean-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr; /* Proporção assimétrica elegante */
+  gap: 80px;
+  align-items: center;
+}
+
+/* IMAGEM EDITORIAL */
+.stl-clean-image img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+}
+
+/* CONTEÚDO DIREITO */
+.stl-clean-content {
+  display: flex;
+  justify-content: center;
+}
+
+.stl-clean-content-inner {
+  max-width: 400px; /* Mantém o texto centralizado e legível */
+  width: 100%;
+}
+
+.stl-clean-title {
+  font-family: 'TanPearlCustom', serif !important;
+  font-size: 50px;
+  font-weight: normal;
+  margin: 0 0 20px 0;
+  color: #000;
+  text-transform: none !important;
+}
+
+.stl-clean-divider {
+  width: 40px;
+  height: 2px;
+  background: #000;
+  margin-bottom: 40px;
+}
+
+/* PRODUTO */
+.stl-clean-product-media {
+  background: #f9f9f9;
+  margin-bottom: 25px;
+}
+
+.stl-clean-product-media img {
+  width: 100%;
+  height: auto;
+  mix-blend-mode: multiply; /* Ótimo para produtos com fundo branco */
+}
+
+.stl-clean-product-title {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin: 0 0 8px 0;
+  color: #000;
+}
+
+.stl-clean-price {
+  font-size: 16px;
+  color: #666;
+  margin-bottom: 20px;
+}
+
+.stl-clean-desc {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #444;
+  margin-bottom: 30px;
+}
+
+/* BOTÃO MINIMAL */
+.stl-clean-btn {
+  width: 100%;
+  background: #000;
+  color: #fff;
+  border: 1px solid #000;
+  padding: 18px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.stl-clean-btn:hover {
+  background: transparent;
+  color: #000;
+}
+
+/* RESPONSIVO CELULAR */
+@media (max-width: 990px) {
+  .stl-clean-grid {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+  
+  .stl-clean-container { padding: 0 20px; }
+  
+  .stl-clean-section { padding: 50px 0; }
+  
+  .stl-clean-content-inner {
+    max-width: 100%;
+  }
+
+  .stl-clean-title {
+    font-size: 38px;
+    text-align: center;
+  }
+
+  .stl-clean-divider {
+    margin: 0 auto 40px auto;
+  }
+  
+  .stl-clean-meta { text-align: center; }
+  .stl-clean-desc { text-align: center; }
+}
+</style>
+
+{% schema %}
+{
+  "name": "Shop the Look Clean",
+  "settings": [
+    { "type": "text", "id": "title", "label": "Título", "default": "Shop the Look" },
+    { "type": "product", "id": "product_handle", "label": "Produto" },
+    { "type": "image_picker", "id": "lifestyle_image", "label": "Imagem Editorial" },
+    { "type": "textarea", "id": "description", "label": "Descrição", "default": "O equilíbrio perfeito entre design contemporâneo e conforto." },
+    { "type": "checkbox", "id": "show_price", "label": "Mostrar Preço", "default": true },
+    { "type": "checkbox", "id": "show_button", "label": "Mostrar Botão", "default": true }
+  ],
+  "presets": [
+    { "name": "Shop the Look Clean" }
+  ]
+}
+{% endschema %}

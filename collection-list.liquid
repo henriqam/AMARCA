@@ -1,0 +1,309 @@
+<section class="identity-modern-section section-{{ section.id }}">
+  <div class="identity-modern-container">
+    
+    {%- if section.settings.title != blank -%}
+      <div class="identity-modern-header">
+        <h2 class="identity-modern-title">{{ section.settings.title | upcase }}</h2>
+        {%- if section.settings.subtitle != blank -%}
+          <p class="identity-modern-subtitle">{{ section.settings.subtitle | upcase }}</p>
+        {%- endif -%}
+        {% comment %} CTA Adicionado para conversão direta {% endcomment %}
+        {%- if section.settings.cta_text != blank -%}
+          <a href="{{ section.settings.cta_link }}" class="identity-modern-cta">
+            {{ section.settings.cta_text | upcase }} 
+            <span style="font-size: 14px; margin-left: 5px;">→</span>
+          </a>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+
+    <div class="identity-modern-grid">
+      {%- for block in section.blocks -%}
+        <div class="identity-modern-item item-{{ forloop.index }}" {{ block.shopify_attributes }}>
+          <a href="{{ block.settings.link }}" class="identity-modern-link">
+            <div class="identity-modern-image-box">
+              {%- if block.settings.image != blank -%}
+                <img 
+                  src="{{ block.settings.image | image_url: width: 1000 }}" 
+                  alt="{{ block.settings.category_title | escape }}" 
+                  loading="lazy" 
+                  width="{{ block.settings.image.width }}"
+                  height="{{ block.settings.image.height }}"
+                  class="identity-modern-img">
+              {%- else -%}
+                {{ 'product-1' | placeholder_svg_tag: 'placeholder-svg-modern' }}
+              {%- endif -%}
+              
+              <div class="identity-modern-text-overlay">
+                <span class="identity-modern-number">0{{ forloop.index }}</span>
+                <h3 class="identity-modern-cat">{{ block.settings.category_title | upcase }}</h3>
+              </div>
+            </div>
+          </a>
+        </div>
+      {%- endfor -%}
+    </div>
+  </div>
+</section>
+
+<style>
+.identity-modern-section {
+  padding: {{ section.settings.padding_top }}px 0 {{ section.settings.padding_bottom }}px;
+  background-color: {{ section.settings.bg_color }};
+  overflow: hidden;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+}
+
+.identity-modern-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 40px;
+}
+
+.identity-modern-header {
+  margin-bottom: 50px;
+  text-align: {{ section.settings.header_align }};
+  /* Animação do Header */
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 1s ease, transform 1s ease;
+}
+
+.identity-modern-header.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.identity-modern-title {
+  font-size: {{ section.settings.title_size }}px;
+  font-weight: 200;
+  letter-spacing: {{ section.settings.title_spacing }}px;
+  margin: 0;
+  color: {{ section.settings.text_color }};
+  line-height: 1.1;
+}
+
+.identity-modern-subtitle {
+  font-size: 11px;
+  letter-spacing: 3px;
+  color: {{ section.settings.text_color }};
+  opacity: 0.7;
+  margin-top: 10px;
+  margin-bottom: 20px;
+}
+
+/* Botão de Chamada para Ação */
+.identity-modern-cta {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  color: {{ section.settings.text_color }};
+  text-decoration: none;
+  border-bottom: 1px solid {{ section.settings.text_color }};
+  padding-bottom: 4px;
+  transition: opacity 0.3s;
+}
+
+.identity-modern-cta:hover {
+  opacity: 0.6;
+}
+
+/* GRID MAIS COMPACTO */
+.identity-modern-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 30px;
+}
+
+/* ANIMAÇÃO BASE DOS ITENS */
+.identity-modern-item {
+  position: relative;
+  /* Estado inicial invisível e deslocado para baixo */
+  opacity: 0;
+  transform: translateY(60px);
+  /* Transição suave e moderna */
+  transition: opacity 1s ease, transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, opacity;
+}
+
+/* Estado visível (ativado via JS) */
+.identity-modern-item.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (min-width: 991px) {
+  /* Offsets originais */
+  .item-1 { grid-column: 1 / 6; margin-top: 0; }
+  .item-2 { grid-column: 7 / 12; margin-top: 60px; } 
+  .item-3 { grid-column: 2 / 7; margin-top: 30px; } 
+  .item-4 { grid-column: 8 / 13; margin-top: -60px; } 
+  
+  /* Hover Effect Desktop - Só funciona se já estiver visível */
+  .identity-modern-item.is-visible:hover {
+    transform: translateY(-10px) scale(1.02);
+  }
+
+  /* Delay em cascata para Desktop (Staggered Animation) */
+  .identity-modern-item.is-visible:nth-child(1) { transition-delay: 0.1s; }
+  .identity-modern-item.is-visible:nth-child(2) { transition-delay: 0.3s; }
+  .identity-modern-item.is-visible:nth-child(3) { transition-delay: 0.2s; } /* Intencionalmente fora de ordem visual */
+  .identity-modern-item.is-visible:nth-child(4) { transition-delay: 0.4s; }
+}
+
+.identity-modern-image-box {
+  position: relative;
+  overflow: hidden; /* Garante que o zoom da imagem não vase */
+}
+
+.identity-modern-img {
+  width: 100%;
+  height: auto;
+  display: block;
+  filter: grayscale({{ section.settings.grayscale }}%);
+  transition: transform 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94), filter 0.5s ease;
+  object-fit: cover;
+}
+
+/* Zoom suave na imagem ao passar o mouse */
+.identity-modern-item:hover .identity-modern-img {
+  transform: scale(1.1);
+  filter: grayscale(0%);
+}
+
+.identity-modern-text-overlay {
+  position: absolute;
+  bottom: 25px;
+  left: -15px;
+  z-index: 2;
+  color: #000;
+  /* Texto aparece vindo da esquerda */
+  transform: translateX(-10px);
+  opacity: 0;
+  transition: all 0.6s ease 0.2s; /* Delay para vir depois da imagem */
+}
+
+/* Texto fica visível quando o item pai fica visível */
+.identity-modern-item.is-visible .identity-modern-text-overlay {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.identity-modern-number {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  display: block;
+  margin-bottom: 4px;
+  color: {{ section.settings.text_color }};
+}
+
+.identity-modern-cat {
+  font-size: clamp(14px, 1.8vw, 20px);
+  font-weight: 300;
+  letter-spacing: 3px;
+  margin: 0;
+  background: #fff;
+  padding: 6px 20px;
+  box-shadow: 6px 6px 0px {{ section.settings.accent_color }};
+  border: 1px solid #f0f0f0;
+}
+
+/* RESPONSIVO MOBILE */
+@media (max-width: 990px) {
+  .identity-modern-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 50px;
+  }
+  .identity-modern-item {
+    width: 90%; 
+    margin: 0 auto !important;
+  }
+  .identity-modern-header {
+    margin-bottom: 40px;
+  }
+  
+  /* Remove delays no mobile para animação instantânea ao scrollar */
+  .identity-modern-item {
+    transition-delay: 0s !important;
+  }
+}
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  // Configuração do Intersection Observer
+  const observerOptions = {
+    root: null, // viewport
+    rootMargin: '0px',
+    threshold: 0.15 // Dispara quando 15% do elemento estiver visível
+  };
+
+  const observer = new IntersectionObserver((entries, observer) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('is-visible');
+        observer.unobserve(entry.target); // Para de observar após animar (roda uma vez)
+      }
+    });
+  }, observerOptions);
+
+  // Seleciona Header e Itens
+  const elementsToAnimate = document.querySelectorAll('.identity-modern-item, .identity-modern-header');
+  
+  elementsToAnimate.forEach(el => {
+    observer.observe(el);
+  });
+});
+</script>
+
+{% schema %}
+{
+  "name": "Identidade Desconstruída",
+  "settings": [
+    { "type": "text", "id": "title", "label": "Título", "default": "Identidade" },
+    { "type": "range", "id": "title_size", "min": 10, "max": 80, "step": 1, "unit": "px", "label": "Tamanho Título", "default": 30 },
+    { "type": "range", "id": "title_spacing", "min": 0, "max": 30, "step": 1, "unit": "px", "label": "Espaçamento Título", "default": 12 },
+    { "type": "text", "id": "subtitle", "label": "Subtítulo", "default": "Vista sua identidade em Cristo" },
+    { "type": "text", "id": "cta_text", "label": "Texto do Botão", "default": "Ver todas as peças" },
+    { "type": "url", "id": "cta_link", "label": "Link do Botão" },
+    { "type": "select", "id": "header_align", "label": "Alinhamento Header", "options": [
+        {"value": "left", "label": "Esquerda"},
+        {"value": "center", "label": "Centro"}
+      ], "default": "left" 
+    },
+    { "type": "color", "id": "bg_color", "label": "Cor de Fundo", "default": "#ffffff" },
+    { "type": "color", "id": "text_color", "label": "Cor do Texto", "default": "#000000" },
+    { "type": "color", "id": "accent_color", "label": "Cor do Detalhe (Sombra)", "default": "#eeeeee" },
+    { "type": "range", "id": "grayscale", "min": 0, "max": 100, "step": 10, "unit": "%", "label": "Filtro Cinza Inicial", "default": 0 },
+    { "type": "header", "content": "Espaçamento" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 150, "step": 5, "unit": "px", "default": 60, "label": "Padding Top" },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 150, "step": 5, "unit": "px", "default": 60, "label": "Padding Bottom" }
+  ],
+  "blocks": [
+    {
+      "type": "category",
+      "name": "Categoria",
+      "limit": 4,
+      "settings": [
+        { "type": "image_picker", "id": "image", "label": "Imagem" },
+        { "type": "text", "id": "category_title", "label": "Nome", "default": "Promessas" },
+        { "type": "url", "id": "link", "label": "Link" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Identidade Desconstruída",
+      "blocks": [
+        { "type": "category", "settings": {"category_title": "Identidade"} },
+        { "type": "category", "settings": {"category_title": "Adoração"} },
+        { "type": "category", "settings": {"category_title": "Herança"} },
+        { "type": "category", "settings": {"category_title": "Pequenos"} }
+      ]
+    }
+  ]
+}
+{% endschema %}
